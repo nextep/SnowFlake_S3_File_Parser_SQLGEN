@@ -95,7 +95,7 @@ for field_name, field_type in field_mappings:
 
 # Button to generate SQL statement
 if st.button("Generate SQL") and selected_fields:
-    select_statement = "SELECT " + ", ".join(selected_fields) + f" FROM @{stage_name} (file_format => JSON)"
+    select_statement = "SELECT " + ", ".join(selected_fields) + f" FROM @{stage_name}/{selected_entry} (file_format => JSON)"
     st.write("Generated Select Statement:")
     st.code(select_statement)
 else:
