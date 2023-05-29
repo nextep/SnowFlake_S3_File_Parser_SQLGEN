@@ -6,14 +6,16 @@ import requests
 import json
 from urllib.error import URLError
 
+# Streamlit secrets
+streamlit_secrets = st.secrets["snowflake"]
 
-# Snowflake connection credentials (hardcoded)
-snowflake_username = "admin"
-snowflake_password = "EL#1iebr"
-snowflake_account = "om05611.ca-central-1.aws"
-snowflake_warehouse = "compute_wh"
-snowflake_database = "EVENTS"
-snowflake_schema = "EVENTS"
+# Snowflake connection credentials
+snowflake_username = streamlit_secrets["user"]
+snowflake_password = streamlit_secrets["password"]
+snowflake_account = streamlit_secrets["account"]
+snowflake_warehouse = streamlit_secrets["warehouse"]
+snowflake_database = streamlit_secrets["database"]
+snowflake_schema = streamlit_secrets["schema"]
 
 # Connect to Snowflake
 conn = snowflake.connector.connect(
@@ -39,7 +41,6 @@ selected_entry = st.selectbox("Select an entry", [entry[0] for entry in stage_en
 
 # Extract the filename from the selected entry
 selected_entry = selected_entry.split("/")[-1].strip()
-
 
 # Step 2: Retrieve JSON structure of the selected file
 query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => JSON) LIMIT 1"
