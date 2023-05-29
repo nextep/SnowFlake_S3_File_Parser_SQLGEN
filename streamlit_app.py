@@ -10,7 +10,7 @@ import streamlit as st
 # Snowflake connection credentials (hardcoded)
 snowflake_username = "admin"
 snowflake_password = "EL#1iebr"
-snowflake_account = "nszzdnc-xa32927.ca-central-1.aws"
+snowflake_account = "xa32927.ca-central-1.aws"
 snowflake_warehouse = "compute_wh"
 snowflake_database = "EVENTS"
 
