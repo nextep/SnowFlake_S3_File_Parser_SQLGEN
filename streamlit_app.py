@@ -94,7 +94,7 @@ for field_name, field_type in field_mappings:
 # Example select statement
 select_fields = []
 for field_name, field_type in field_mappings:
-    select_fields.append(f"{key_field}{field_name}::{field_type} as {field_name}")
+    select_fields.append(f"{key_field}:{field_name}::{field_type} as {field_name}")
 select_statement = "SELECT " + ", ".join(select_fields) + f" FROM @{stage_name} (file_format => JSON)"
 st.write("Generated Select Statement:")
 st.code(select_statement)
