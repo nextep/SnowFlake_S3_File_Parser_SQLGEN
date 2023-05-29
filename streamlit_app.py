@@ -2,7 +2,7 @@
 
 import pandas
 import requests
-
+import json
 from urllib.error import URLError
 import snowflake.connector
 import streamlit as st
@@ -41,19 +41,36 @@ selected_entry = st.selectbox("Select an entry", [entry[0] for entry in stage_en
 selected_entry = selected_entry.split("/")[-1].strip()
 
 # Step 3: Analyze JSON structure and generate field mappings
-query = f"SELECT PARSE_JSON($1) FROM @{stage_name}/{selected_entry} (file_format => JSON)"
-result = conn.cursor().execute(query).fetchall()
+query = f"SELECT PARSE_JSON($1) FROM @{stage_name}/{selected_entry} (file_format => JSON) LIMIT 1"
+result = conn.cursor().execute(query).fetchone()
 
-# Analyze the first row to determine the JSON structure
-json_structure = result[0][0]
+# Get the JSON structure
+json_structure = result[0]
 
 # Generate field mappings based on the JSON structure
 field_mappings = []
-for node in json_structure.flatten():
-    field_name = node.get_path()
-    field_type = node.get_type().name
-    field_mapping = f"$1:{field_name}::{field_type}"
-    field_mappings.append(field_mapping)
+
+def generate_field_mappings(json_structure, parent_key=''):
+    for key, value in json_structure.items():
+        field_name = f"{parent_key}.{key}" if parent_key else key
+
+        if isinstance(value, dict):
+            generate_field_mappings(value, field_name)
+        else:
+            field_type = get_field_type(value)
+            field_mapping = f"$1:{field_name}::{field_type}"
+            field_mappings.append(field_mapping)
+
+def get_field_type(value):
+    if isinstance(value, int):
+        return "number"
+    elif isinstance(value, bool):
+        return "boolean"
+    else:
+        return "varchar"
+
+# Generate field mappings recursively
+generate_field_mappings(json_structure)
 
 # Step 4: Create a SELECT command with selected fields
 select_command = f"SELECT {', '.join(field_mappings)} FROM @{stage_name}/{selected_entry} (file_format => JSON)"
