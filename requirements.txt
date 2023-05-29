@@ -1,0 +1,4 @@
+snowflake-connector-python
+snowflake-snowpark-python
+plotly==5.14.1
+
