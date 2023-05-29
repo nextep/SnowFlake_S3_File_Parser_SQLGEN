@@ -18,7 +18,14 @@ snowflake_database = streamlit_secrets["database"]
 snowflake_schema = streamlit_secrets["schema"]
 
 # Connect to Snowflake
-conn = snowflake.connector.connect(**streamlit.secrets["snowflake"])
+conn = snowflake.connector.connect(
+    user=snowflake_username,
+    password=snowflake_password,
+    account=snowflake_account,
+    warehouse=snowflake_warehouse,
+    database=snowflake_database,
+    schema=snowflake_schema
+)
 
 # Step 1: List entries in the Snowflake stage
 stage_name = 'evt_2_sf'
