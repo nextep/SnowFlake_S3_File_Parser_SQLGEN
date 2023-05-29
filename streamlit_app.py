@@ -35,10 +35,10 @@ st.write("Select a file from the stage and choose a mapping")
 
 # Display stage entries to the user
 st.write("Stage Entries:")
-selected_entry =  selected_entry.split("/")[-1].strip()
+selected_entry = st.selectbox("Select an entry", [entry[0] for entry in stage_entries])
 
-# Modify selected_entry by trimming characters after the last '/'
-selected_entry = selected_entry_full.rsplit('/', 1)[1] if '/' in selected_entry_full else selected_entry_full
+# Extract the filename from the selected entry
+selected_entry = selected_entry.split("/")[-1].strip()
 
 # Step 3: Create a list of mappings from JSON values
 query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => JSON)"
