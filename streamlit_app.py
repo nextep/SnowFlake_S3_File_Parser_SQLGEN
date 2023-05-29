@@ -1,96 +1,47 @@
-import streamlit as st
 import snowflake.connector
+import streamlit as st
 
-# Snowpark connection configuration
-account = 'nszzdnc-xa32927'
-user = None
-password = None
+# Retrieve Snowflake credentials from Streamlit secrets
+snowflake_username = st.secrets["snowflake_username"]
+snowflake_password = st.secrets["snowflake_password"]
+snowflake_account = st.secrets["snowflake_account"]
+snowflake_warehouse = st.secrets["snowflake_warehouse"]
+snowflake_database = st.secrets["snowflake_database"]
+snowflake_schema = st.secrets["snowflake_schema"]
 
-# Page styling and logo
-st.set_page_config(
-    initial_sidebar_state="collapsed",
-    page_title="SIEMTrax",
-    page_icon='siemtrax_logo.jpg'
+# Connect to Snowflake
+conn = snowflake.connector.connect(
+    user=snowflake_username,
+    password=snowflake_password,
+    account=snowflake_account,
+    warehouse=snowflake_warehouse,
+    database=snowflake_database,
+    schema=snowflake_schema
 )
 
-# Logo image
-logo_image = 'siemtrax_logo.jpg'
-st.image(logo_image, use_column_width=True)
+# Step 1: List entries in the Snowflake stage
+stage_name = 'evt_2_sf'
+stage_entries = conn.cursor().execute(f"LIST @ {stage_name}").fetchall()
 
-# Authenticate using Snowflake connector
-def authenticate(username, password):
-    connection = snowflake.connector.connect(
-        user=username,
-        password=password,
-        account=account
-    )
-    # Perform authentication and return the connection object
-    return connection
+# Display stage entries to the user
+st.write("Stage Entries:")
+for entry in stage_entries:
+    st.write(entry[0])
 
-# Define the SessionState class for session handling
-class SessionState:
-    def __init__(self, username=None):
-        self.username = username
-        self.password = None
-        self.connection = None
+# Step 2: Allow user to select an entry
+selected_entry = st.selectbox("Select an entry", [entry[0] for entry in stage_entries])
 
-# Get or create the session state
-def get_session_state():
-    if 'session' not in st.session_state:
-        st.session_state['session'] = SessionState()
-    return st.session_state['session']
+# Step 3: Create a list of mappings from JSON values
+query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => JSON)"
+result = conn.cursor().execute(query).fetchall()
 
-# Get or create the session state
-session_state = get_session_state()
+# Extract JSON values and display to the user
+mappings = [row[0] for row in result]
+selected_mapping = st.selectbox("Select a mapping", mappings)
 
-# Check if the user is already authenticated
-authenticated = session_state.connection is not None
+# Step 4: Create a SELECT command with selected fields
+select_command = f"SELECT {selected_mapping} FROM @{stage_name}/{selected_entry} (file_format => JSON)"
 
-if not authenticated:
-    # Username and password input
-    username = st.text_input('Username')
-    password = st.text_input('Password', type='password')
-
-    # Submit button for login
-    if st.button('Login'):
-        if username and password:
-            session_state.username = username
-            session_state.password = password
-            session_state.connection = authenticate(username, password)
-
-            # Clear the password field after authentication
-            session_state.password = None
-
-            # Refresh the page after login
-            st.experimental_rerun()
-
-# Check if the user is authenticated before rendering menu sections
-if session_state.connection or authenticated:
-    menu = ['Alerts', 'Dashboards', 'Security Use Cases', 'Reports']
-    choice = st.selectbox('Menu', menu)
-
-    if choice == 'Alerts':
-        # Add your code for the Alerts section
-        st.write('This is the Alerts section.')
-
-    elif choice == 'Dashboards':
-        # Add your code for the Dashboards section
-        st.write('This is the Dashboards section.')
-
-    elif choice == 'Security Use Cases':
-        # Add your code for the Security Use Cases section
-        st.write('This is the Security Use Cases section.')
-
-    elif choice == 'Reports':
-        # Add your code for the Reports section
-        st.write('This is the Reports section.')
-
-# Logout button at the bottom right
-col1, col2 = st.beta_columns([1, 3])
-with col2:
-    if st.button('Logout', key='logout_button'):
-        # Clear the session and refresh the page
-        session_state.connection = None
-        session_state.username = None
-        session_state.password = None
-        st.experimental_rerun()
+# Display the generated SELECT command
+st.write("Generated SELECT command:")
+st.code(select_command)
