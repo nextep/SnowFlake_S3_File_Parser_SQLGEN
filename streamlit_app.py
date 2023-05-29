@@ -89,13 +89,16 @@ columns = st.beta_columns(3)
 selected_fields = []
 for field_name, field_type in field_mappings:
     with columns[0]:
-        st.write(f"$:{field_name}::{field_type}")
+        st.write(f"${selected_entry}:{field_name}::{field_type}")
     with columns[1]:
         input_key = f"{field_name}"
         input_value = st.text_input(f"Enter field name for {field_name}", "")
     with columns[2]:
         if input_value:
-            selected_fields.append(f"{key_field}:{field_name}::{field_type} as {input_value}")
+            if "@" in field_name:
+                selected_fields.append(f"${selected_entry}:'{field_name}'::{field_type} as {input_value}")
+            else:
+                selected_fields.append(f"${selected_entry}:{field_name}::{field_type} as {input_value}")
 
 # Button to generate SQL statement
 if st.button("Generate SQL") and selected_fields:
@@ -104,4 +107,3 @@ if st.button("Generate SQL") and selected_fields:
     st.code(select_statement)
 else:
     st.write("Please provide values for the corresponding fields.")
-    
