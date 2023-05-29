@@ -1,23 +1,16 @@
-import snowflake.connector
+
 import streamlit as st
+import pandas
+import requests
+import snowflake.connector
+from urllib.error import URLError
+
 
 # Retrieve Snowflake credentials from Streamlit secrets
-snowflake_username = st.secrets["snowflake_username"]
-snowflake_password = st.secrets["snowflake_password"]
-snowflake_account = st.secrets["snowflake_account"]
-snowflake_warehouse = st.secrets["snowflake_warehouse"]
-snowflake_database = st.secrets["snowflake_database"]
-snowflake_schema = st.secrets["snowflake_schema"]
+snowflake_secrets = st.secrets["snowflake"]
 
 # Connect to Snowflake
-conn = snowflake.connector.connect(
-    user=snowflake_username,
-    password=snowflake_password,
-    account=snowflake_account,
-    warehouse=snowflake_warehouse,
-    database=snowflake_database,
-    schema=snowflake_schema
-)
+conn = snowflake.connector.connect(**snowflake_secrets)
 
 # Step 1: List entries in the Snowflake stage
 stage_name = 'evt_2_sf'
