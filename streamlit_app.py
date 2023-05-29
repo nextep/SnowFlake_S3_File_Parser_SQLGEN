@@ -40,12 +40,16 @@ selected_entry = st.selectbox("Select an entry", [entry[0] for entry in stage_en
 # Extract the filename from the selected entry
 selected_entry = selected_entry.split("/")[-1].strip()
 
+
 # Step 2: Retrieve JSON structure of the selected file
-query = f"SELECT PARSE_JSON($1) FROM @{stage_name}/{selected_entry} (file_format => JSON) LIMIT 1"
+query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => JSON) LIMIT 1"
 result = conn.cursor().execute(query).fetchone()
 
-# Get the JSON structure as a dictionary
-json_structure = result[0]
+# Get the JSON structure as a string
+json_string = result[0]
+
+# Parse JSON structure into a dictionary
+json_structure = json.loads(json_string)
 
 # Function to generate field mappings
 def generate_field_mappings(json_structure, parent_key=''):
