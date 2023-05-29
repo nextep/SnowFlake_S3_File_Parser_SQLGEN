@@ -85,4 +85,4 @@ field_mappings = generate_field_mappings(json_structure)
 # Display the field mappings
 st.write("Field Mappings:")
 for field_name, field_type in field_mappings:
-    st.write(f"$1:{field_name}::{field_type}")
+    st.write(f""$1":{field_name}::{field_type}")
