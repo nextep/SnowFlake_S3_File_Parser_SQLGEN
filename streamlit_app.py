@@ -96,7 +96,7 @@ for field_name, field_type in field_mappings:
     with columns[2]:
         if input_value:
             if "@" in field_name:
-                selected_fields.append(f"{key_field}:"{field_name}"::{field_type} as {input_value}")
+                selected_fields.append(f"{key_field}:\"{field_name}\"::{field_type} as {input_value}")
             else:
                 selected_fields.append(f"{key_field}:{field_name}::{field_type} as {input_value}")
 
