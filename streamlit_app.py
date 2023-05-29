@@ -45,6 +45,10 @@ selected_entry = selected_entry.split("/")[-1].strip()
 query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => JSON) LIMIT 1"
 result = conn.cursor().execute(query).fetchone()
 
+# Display result
+st.write("Result:")
+st.write(result)
+
 # Get the JSON structure as a string
 json_string = result[0]
 
