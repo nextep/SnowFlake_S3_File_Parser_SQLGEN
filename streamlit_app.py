@@ -85,8 +85,8 @@ field_mappings = generate_field_mappings(json_structure)
 # Streamlit UI for field mappings and text inputs
 st.write("Field Mappings:")
 for field_name, field_type in field_mappings:
-    st.write(f"${selected_entry}:{field_name}::{field_type}")
-    input_key = f"{selected_entry}:{field_name}"
+    st.write(f"$1:{field_name}::{field_type}")
+    input_key = f"{field_name}"
     input_value = st.text_input(f"Enter text value for {field_name}", "")
     # Use input_key and input_value to assemble and craft the select statement
 
