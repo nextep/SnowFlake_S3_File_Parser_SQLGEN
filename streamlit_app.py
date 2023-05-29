@@ -1,7 +1,7 @@
 import snowflake.connector
 import streamlit as st
 
-import pandas
+import pandas as pd
 import requests
 import json
 from urllib.error import URLError
@@ -70,8 +70,14 @@ def get_field_type(value):
         return "number"
     elif isinstance(value, bool):
         return "boolean"
-    else:
-        return "varchar"
+    elif isinstance(value, str):
+        # Check if the string value is a timestamp
+        try:
+            pd.Timestamp(value)
+            return "timestamp"
+        except ValueError:
+            pass
+    return "varchar"
 
 # Generate field mappings
 field_mappings = generate_field_mappings(json_structure)
