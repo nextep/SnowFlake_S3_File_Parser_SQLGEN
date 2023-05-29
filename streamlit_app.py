@@ -8,8 +8,8 @@ import snowflake.connector
 import streamlit as st
 
 # Snowflake connection credentials (hardcoded)
-snowflake_username = "SIEMTRAX"
-snowflake_password = "gjweTQ!!3FAQwfs!!gs!dfGJ&i8"
+snowflake_username = "admin"
+snowflake_password = "EL#1iebr"
 snowflake_account = "om05611.ca-central-1.aws"
 snowflake_warehouse = "compute_wh"
 snowflake_database = "EVENTS"
