@@ -27,14 +27,14 @@ conn = snowflake.connector.connect(
 
 # Step 1: List entries in the Snowflake stage
 stage_name = 'evt_2_sf'
-stage_entries = conn.cursor().execute(f"LIST @%{stage_name}").fetchall()
+stage_entries = conn.cursor().execute(f"LIST @evt_2_sf").fetchall()
+
+# Streamlit UI
+st.title("Snowflake Stage File Analysis")
+st.write("Select a file from the stage and choose a mapping")
 
 # Display stage entries to the user
 st.write("Stage Entries:")
-for entry in stage_entries:
-    st.write(entry[0])
-
-# Step 2: Allow user to select an entry
 selected_entry = st.selectbox("Select an entry", [entry[0] for entry in stage_entries])
 
 # Step 3: Create a list of mappings from JSON values
