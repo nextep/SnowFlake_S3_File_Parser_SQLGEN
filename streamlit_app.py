@@ -39,27 +39,28 @@ selected_entry = st.selectbox("Select an entry", [entry[0] for entry in stage_en
 
 # Extract the filename from the selected entry
 selected_entry = selected_entry.split("/")[-1].strip()
-# Step 3: Analyze JSON structure and generate field mappings
-query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => JSON) LIMIT 1"
+
+# Step 2: Retrieve JSON structure of the selected file
+query = f"SELECT PARSE_JSON($1) FROM @{stage_name}/{selected_entry} (file_format => JSON) LIMIT 1"
 result = conn.cursor().execute(query).fetchone()
 
 # Get the JSON structure as a dictionary
 json_structure = result[0]
 
-# Generate field mappings based on the JSON structure
-field_mappings = []
-
+# Function to generate field mappings
 def generate_field_mappings(json_structure, parent_key=''):
+    mappings = []
     for key, value in json_structure.items():
         field_name = f"{parent_key}.{key}" if parent_key else key
 
         if isinstance(value, dict):
-            generate_field_mappings(value, field_name)
+            mappings.extend(generate_field_mappings(value, field_name))
         else:
-            field_type = get_field_type(value)
-            field_mapping = f"$1:{field_name}::{field_type}"
-            field_mappings.append(field_mapping)
+            mappings.append((field_name, get_field_type(value)))
 
+    return mappings
+
+# Function to determine field type
 def get_field_type(value):
     if isinstance(value, int):
         return "number"
@@ -68,12 +69,10 @@ def get_field_type(value):
     else:
         return "varchar"
 
-# Generate field mappings recursively
-generate_field_mappings(json_structure)
+# Generate field mappings
+field_mappings = generate_field_mappings(json_structure)
 
-# Step 4: Create a SELECT command with selected fields
-select_command = f"SELECT {', '.join(field_mappings)} FROM @{stage_name}/{selected_entry} (file_format => JSON)"
-
-# Display the generated SELECT command
-st.write("Generated SELECT command:")
-st.code(select_command)
+# Display the field mappings
+st.write("Field Mappings:")
+for field_name, field_type in field_mappings:
+    st.write(f"{field_name}: {field_type}")
