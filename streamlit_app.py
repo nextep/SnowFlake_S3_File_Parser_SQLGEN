@@ -18,7 +18,7 @@ conn = snowflake.connector.connect(
     user=snowflake_username,
     password=snowflake_password,
     account=snowflake_account,
-    warehouse=snowflake_warehous
+    warehouse=snowflake_warehouse
 )
 
 # Step 1: List entries in the Snowflake stage
