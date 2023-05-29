@@ -40,17 +40,44 @@ selected_entry = st.selectbox("Select an entry", [entry[0] for entry in stage_en
 # Extract the filename from the selected entry
 selected_entry = selected_entry.split("/")[-1].strip()
 
-# Step 3: Create a list of mappings from JSON values
-query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => JSON)"
-result = conn.cursor().execute(query).fetchall()
+# Step 3: Flatten the JSON and generate the SELECT command with field types
+query = f"""
+SELECT
+    FLATTEN(input:$1:"$.alert")::VARCHAR AS alert,
+    FLATTEN(input:$1:"$.app_proto")::VARCHAR AS app_proto,
+    FLATTEN(input:$1:"$.dest_ip")::VARCHAR AS dest_ip,
+    FLATTEN(input:$1:"$.dest_port")::NUMBER AS dest_port,
+    FLATTEN(input:$1:"$.event_type")::VARCHAR AS event_type,
+    FLATTEN(input:$1:"$.flow.bytes_toclient")::NUMBER AS bytes_toclient,
+    FLATTEN(input:$1:"$.flow.bytes_toserver")::NUMBER AS bytes_toserver,
+    FLATTEN(input:$1:"$.flow.pkts_toclient")::NUMBER AS pkts_toclient,
+    FLATTEN(input:$1:"$.flow.pkts_toserver")::NUMBER AS pkts_toserver,
+    FLATTEN(input:$1:"$.flow.start")::VARCHAR AS flow_start,
+    FLATTEN(input:$1:"$.flow_id")::NUMBER AS flow_id,
+    FLATTEN(input:$1:"$.http.hostname")::VARCHAR AS hostname,
+    FLATTEN(input:$1:"$.http.http_content_type")::VARCHAR AS http_content_type,
+    FLATTEN(input:$1:"$.http.http_method")::VARCHAR AS http_method,
+    FLATTEN(input:$1:"$.http.http_user_agent")::VARCHAR AS http_user_agent,
+    FLATTEN(input:$1:"$.http.length")::NUMBER AS http_length,
+    FLATTEN(input:$1:"$.http.protocol")::VARCHAR AS http_protocol,
+    FLATTEN(input:$1:"$.http.status")::NUMBER AS http_status,
+    FLATTEN(input:$1:"$.http.url")::VARCHAR AS http_url,
+    FLATTEN(input:$1:"$.payload")::VARCHAR AS payload,
+    FLATTEN(input:$1:"$.pcap_cnt")::NUMBER AS pcap_cnt,
+    FLATTEN(input:$1:"$.proto")::VARCHAR AS proto,
+    FLATTEN(input:$1:"$.src_ip")::VARCHAR AS src_ip,
+    FLATTEN(input:$1:"$.src_port")::NUMBER AS src_port,
+    FLATTEN(input:$1:"$.stream")::NUMBER AS stream,
+    FLATTEN(input:$1:"$.timestamp")::VARCHAR AS timestamp,
+    FLATTEN(input:$1:"$.tx_id")::NUMBER AS tx_id
+FROM
+    @{stage_name}/{selected_entry}
+(file_format => JSON)
+"""
 
-# Extract JSON values and display to the user
-mappings = [row[0] for row in result]
-selected_mapping = st.selectbox("Select a mapping", mappings)
+# Display the generated SELECT command and the extracted filename
+st.write("Selected Filename:")
+st.write(filename)
 
-# Step 4: Create a SELECT command with selected fields
-select_command = f"SELECT {selected_mapping} FROM @{stage_name}/{selected_entry} (file_format => JSON)"
-
-# Display the generated SELECT command
 st.write("Generated SELECT command:")
-st.code(select_command)
+st.code(query)
