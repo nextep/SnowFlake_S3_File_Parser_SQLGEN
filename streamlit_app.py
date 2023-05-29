@@ -91,7 +91,7 @@ for field_name, field_type in field_mappings:
     input_key = f"{field_name}"
     input_value = st.text_input(f"Enter text value for {field_name}", "")
     if input_value:
-        selected_fields.append(f"${key_field}:{field_name}::{field_type} as {field_name}")
+        selected_fields.append(f"${key_field}:{field_name}::{field_type} as {input_value}")
 
 # Button to generate SQL statement
 if st.button("Generate SQL") and selected_fields:
