@@ -82,7 +82,18 @@ def get_field_type(value):
 # Generate field mappings
 field_mappings = generate_field_mappings(json_structure)
 
-# Display the field mappings
+# Streamlit UI for field mappings and text inputs
 st.write("Field Mappings:")
 for field_name, field_type in field_mappings:
-    st.write(f"'$1':{field_name}::{field_type}")
+    st.write(f"${selected_entry}:{field_name}::{field_type}")
+    input_key = f"{selected_entry}:{field_name}"
+    input_value = st.text_input(f"Enter text value for {field_name}", "")
+    # Use input_key and input_value to assemble and craft the select statement
+
+# Example select statement
+select_fields = []
+for field_name, field_type in field_mappings:
+    select_fields.append(f"${selected_entry}:{field_name}::{field_type} as {field_name}")
+select_statement = "SELECT " + ", ".join(select_fields) + f" FROM @{stage_name} (file_format => JSON)"
+st.write("Generated Select Statement:")
+st.code(select_statement)
