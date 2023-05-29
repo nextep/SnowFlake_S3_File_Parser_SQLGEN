@@ -1,11 +1,11 @@
-
+import snowflake.connector
+import streamlit as st
 
 import pandas
 import requests
 import json
 from urllib.error import URLError
-import snowflake.connector
-import streamlit as st
+
 
 # Snowflake connection credentials (hardcoded)
 snowflake_username = "admin"
