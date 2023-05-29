@@ -12,17 +12,13 @@ snowflake_username = "admin"
 snowflake_password = "EL#1iebr"
 snowflake_account = "nszzdnc-xa32927.ca-central-1.aws"
 snowflake_warehouse = "compute_wh"
-snowflake_database = "events"
-snowflake_schema = "events"
 
 # Connect to Snowflake
 conn = snowflake.connector.connect(
     user=snowflake_username,
     password=snowflake_password,
     account=snowflake_account,
-    warehouse=snowflake_warehouse,
-    database=snowflake_database,
-    schema=snowflake_schema
+    warehouse=snowflake_warehous
 )
 
 # Step 1: List entries in the Snowflake stage
