@@ -77,7 +77,7 @@ FROM
 
 # Display the generated SELECT command and the extracted filename
 st.write("Selected Filename:")
-st.write(filename)
+st.write(selected_entry)
 
 st.write("Generated SELECT command:")
 st.code(query)
