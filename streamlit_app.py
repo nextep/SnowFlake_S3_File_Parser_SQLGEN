@@ -54,8 +54,8 @@ try:
     query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
     result = conn.cursor().execute(query).fetchone()
 except snowflake.connector.errors.ProgrammingError as e:
-st.error("Error occurred while retrieving JSON structure. Please check your stage entry and file format.")
-st.error(str(e))
+    st.error("Error occurred while retrieving JSON structure. Please check your stage entry and file format.")
+    st.error(str(e))
 
 # Display result
 st.write("Result:")
