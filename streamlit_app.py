@@ -49,10 +49,13 @@ file_formats = ["JSON", "CSV"]  # Add your desired file formats here
 # File format selection
 selected_file_format = st.selectbox("Select a file format", file_formats)
 
-
-# Step 2: Retrieve JSON structure of the selected file
-query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
-result = conn.cursor().execute(query).fetchone()
+try:
+    # Step 2: Retrieve JSON structure of the selected file
+    query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
+    result = conn.cursor().execute(query).fetchone()
+except snowflake.connector.errors.ProgrammingError as e:
+st.error("Error occurred while retrieving JSON structure. Please check your stage entry and file format.")
+st.error(str(e))
 
 # Display result
 st.write("Result:")
