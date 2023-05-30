@@ -49,22 +49,7 @@ try:
 
     # File format selection
     selected_file_format = st.selectbox("Select a file format", file_formats)
-
-try:
-        # Step 2: Retrieve JSON structure of the selected file
-        query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
-        result = conn.cursor().execute(query).fetchone()
-
-        # Display result
-        st.write("Result:")
-        st.write(result)
-
-        # Get the JSON structure as a string
-        json_string = result[0]
-
-        # Parse JSON structure into a dictionary
-        json_structure = json.loads(json_string)
-
+    
         # Function to generate field mappings
         def generate_field_mappings(json_structure, parent_key=''):
             mappings = []
@@ -93,6 +78,22 @@ try:
                     pass
             return "varchar"
 
+try:
+        # Step 2: Retrieve JSON structure of the selected file
+        query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
+        result = conn.cursor().execute(query).fetchone()
+
+        # Display result
+        st.write("Result:")
+        st.write(result)
+
+        # Get the JSON structure as a string
+        json_string = result[0]
+
+        # Parse JSON structure into a dictionary
+        json_structure = json.loads(json_string)
+
+    
         # Generate field mappings
         field_mappings = generate_field_mappings(json_structure)
         key_field = '$1'
