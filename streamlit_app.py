@@ -53,6 +53,9 @@ try:
     # Step 2: Retrieve JSON structure of the selected file
     query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
     result = conn.cursor().execute(query).fetchone()
+except snowflake.connector.errors.ProgrammingError as e:
+    st.error("Not the parser, try another.")
+    st.error(str(e))
 
 # Display result
 st.write("Result:")
@@ -121,6 +124,3 @@ if st.button("Generate SQL") and selected_fields:
 else:
     st.write("Please provide values for the corresponding fields.")
     
-except snowflake.connector.errors.ProgrammingError as e:
-    st.error("Not the parser, try another.")
-    st.error(str(e))
