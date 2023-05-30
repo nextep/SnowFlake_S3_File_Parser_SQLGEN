@@ -42,8 +42,16 @@ selected_entry = st.selectbox("Select an entry", [entry[0] for entry in stage_en
 # Extract the filename from the selected entry
 selected_entry = selected_entry.split("/")[-1].strip()
 
+
+# File formats
+file_formats = ["JSON", "CSV"]  # Add your desired file formats here
+
+# File format selection
+selected_file_format = st.selectbox("Select a file format", file_formats)
+
+
 # Step 2: Retrieve JSON structure of the selected file
-query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => JSON) LIMIT 1"
+query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
 result = conn.cursor().execute(query).fetchone()
 
 # Display result
@@ -107,7 +115,7 @@ for field_name, field_type in field_mappings:
 
 # Button to generate SQL statement
 if st.button("Generate SQL") and selected_fields:
-    select_statement = "SELECT " + ", ".join(selected_fields) + f" FROM @{stage_name}/{selected_entry} (file_format => JSON)"
+    select_statement = "SELECT " + ", ".join(selected_fields) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
     st.write("Generated Select Statement:")
     st.code(select_statement)
 else:
