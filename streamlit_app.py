@@ -78,7 +78,7 @@ try:
                 pass
         return "varchar"
 
-try:
+    try:
         # Step 2: Retrieve JSON structure of the selected file
         query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
         result = conn.cursor().execute(query).fetchone()
@@ -122,11 +122,12 @@ try:
             st.code(select_statement)
         else:
             st.write("Please provide values for the corresponding fields.")
-        except snowflake.connector.errors.ProgrammingError as e:
-        st.error("Does not parse.")
-        st.error(str(e))
+    
+            except snowflake.connector.errors.ProgrammingError as e:
+            st.error("Does not parse.")
+            st.error(str(e))
 
-except snowflake.connector.errors.DatabaseError as e:
+    except snowflake.connector.errors.DatabaseError as e:
     st.error("Error occurred while connecting to Snowflake. Please check your Snowflake connection credentials.")
     st.error(str(e))
 
