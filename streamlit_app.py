@@ -85,7 +85,6 @@ def get_field_type(value):
     return "varchar"
 
 # Generate field mappings
-field_mappings = generate_field_mappings(json_structure)
 key_field = '$1'
 
 # Streamlit UI for field mappings and text inputs
