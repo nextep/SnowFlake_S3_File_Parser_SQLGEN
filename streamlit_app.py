@@ -51,32 +51,32 @@ try:
     selected_file_format = st.selectbox("Select a file format", file_formats)
     
         # Function to generate field mappings
-        def generate_field_mappings(json_structure, parent_key=''):
-            mappings = []
-            for key, value in json_structure.items():
-                field_name = f"{parent_key}.{key}" if parent_key else key
+    def generate_field_mappings(json_structure, parent_key=''):
+        mappings = []
+        for key, value in json_structure.items():
+            field_name = f"{parent_key}.{key}" if parent_key else key
 
-                if isinstance(value, dict):
-                    mappings.extend(generate_field_mappings(value, field_name))
-                else:
-                    mappings.append((field_name, get_field_type(value)))
+            if isinstance(value, dict):
+                mappings.extend(generate_field_mappings(value, field_name))
+            else:
+                mappings.append((field_name, get_field_type(value)))
 
-            return mappings
+        return mappings
 
-        # Function to determine field type
-        def get_field_type(value):
-            if isinstance(value, int):
-                return "number"
-            elif isinstance(value, bool):
-                return "boolean"
-            elif isinstance(value, str):
-                # Check if the string value is a timestamp
-                try:
-                    pd.Timestamp(value)
-                    return "timestamp"
-                except ValueError:
-                    pass
-            return "varchar"
+    # Function to determine field type
+    def get_field_type(value):
+        if isinstance(value, int):
+            return "number"
+        elif isinstance(value, bool):
+            return "boolean"
+        elif isinstance(value, str):
+            # Check if the string value is a timestamp
+            try:
+                pd.Timestamp(value)
+                return "timestamp"
+            except ValueError:
+                pass
+        return "varchar"
 
 try:
         # Step 2: Retrieve JSON structure of the selected file
