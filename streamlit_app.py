@@ -123,9 +123,9 @@ try:
         else:
             st.write("Please provide values for the corresponding fields.")
     
-            except snowflake.connector.errors.ProgrammingError as e:
-            st.error("Does not parse.")
-            st.error(str(e))
+        except snowflake.connector.errors.ProgrammingError as e:
+        st.error("Does not parse.")
+        st.error(str(e))
 
     except snowflake.connector.errors.DatabaseError as e:
     st.error("Error occurred while connecting to Snowflake. Please check your Snowflake connection credentials.")
