@@ -89,29 +89,14 @@ else:
         regex_matches = re.finditer(regex_pattern, structure_string)
         if regex_matches:
             field_mapping_data = []
-            for i, match in enumerate(regex_matches, start=1):
-                field_name = st.text_input(f"Enter field name for Token {i}", key=f"field_{i}", max_chars=20)
-                regex_pattern = f"(?P<{field_name}>{re.escape(match.group())})" if field_name else None
-                field_mapping_data.extend([{"Field Name": field_name, "Value": value, "Regex Pattern": regex_pattern} for value in match.groups()])
+            if not field_mapping_df.empty:
+                for i, row in field_mapping_df.iterrows():
+                    field_name = st.text_input(f"Enter field name for Token {i+1} (Value: {row['Value']})", key=f"field_name_{i}", value=row['Field Name'], max_chars=20)
+                    field_mapping_data.append({"Field Name": field_name, "Value": row['Value'], "Regex Pattern": row['Regex Pattern']})
             field_mapping_df = pd.DataFrame(field_mapping_data)
             st.write("Field Mappings:")
             if not field_mapping_df.empty:
                 st.table(field_mapping_df)
-
-# Create an input field for each row to enter field values
-field_values = []
-if not field_mapping_df.empty:
-    for i, row in field_mapping_df.iterrows():
-        field_value = st.text_input(f"Enter field value for Field Name '{row['Field Name']}' (Line {i + 1})", key=f"field_value_{i}")
-        field_values.append(field_value)
-
-# Add the entered field values to the DataFrame
-field_mapping_df["Field Value"] = field_values
-
-# Display the updated table with field values
-st.write("Updated Field Mappings:")
-if not field_mapping_df.empty:
-    st.table(field_mapping_df)
 
 # Get selected field names for query
 selected_fields = field_mapping_df["Field Name"].tolist()
@@ -122,7 +107,6 @@ if st.button("Generate SQL") and selected_fields:
     select_statement = "SELECT " + ", ".join(selected_fields) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
     st.write("Generated Select Statement:")
     st.code(select_statement)
-
 
     if st.button("Generate Regex") and selected_regex_patterns:
         combined_regex = "|".join(selected_regex_patterns)
