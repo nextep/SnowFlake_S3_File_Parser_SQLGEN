@@ -98,18 +98,19 @@ else:
     if structure_dict is None:
         st.error("The structure of the result could not be determined.")
     else:
-        field_value_data = []
+        field_mapping_data = []
         for original_field, field_value in structure_dict.items():
             field_name = st.text_input(f"Enter field name for {original_field}", "")
             if field_name:
-                field_value_data.append({"Field Name": field_name, "Value": field_value})
+                regex_pattern = f"(?P<{field_name}>{re.escape(field_value)})"
+                field_mapping_data.append({"Field Name": field_name, "Value": field_value, "Regex Pattern": regex_pattern})
 
         # Create a DataFrame and display it as a table in Streamlit
-        field_value_df = pd.DataFrame(field_value_data)
-        st.table(field_value_df)
+        field_mapping_df = pd.DataFrame(field_mapping_data)
+        st.table(field_mapping_df)
 
-        selected_fields = [row["Field Name"] for _, row in field_value_df.iterrows()]
-        selected_regex = [f"(?P<{row['Field Name']}>{re.escape(row['Value'])})" for _, row in field_value_df.iterrows()]
+        selected_fields = [row["Field Name"] for _, row in field_mapping_df.iterrows()]
+        selected_regex_patterns = [row["Regex Pattern"] for _, row in field_mapping_df.iterrows()]
 
         # Button to generate SQL statement
         if st.button("Generate SQL") and selected_fields:
@@ -117,7 +118,7 @@ else:
             st.write("Generated Select Statement:")
             st.code(select_statement)
 
-        if st.button("Generate Regex") and selected_regex:
-            combined_regex = "|".join(selected_regex)
+        if st.button("Generate Regex") and selected_regex_patterns:
+            combined_regex = "|".join(selected_regex_patterns)
             st.write("Generated Regex:")
             st.code(combined_regex)
