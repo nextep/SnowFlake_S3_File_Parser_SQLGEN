@@ -120,6 +120,6 @@ if st.button("Generate Regex") and selected_regex_patterns:
     st.write("Generated Regex:")
     st.code(combined_regex)
 else:
-st.error("No matches found in the result using the provided regex pattern.")
+    st.error("No matches found in the result using the provided regex pattern.")
 else:
-st.error("Invalid file format selected.")
+    st.error("Invalid file format selected.")
