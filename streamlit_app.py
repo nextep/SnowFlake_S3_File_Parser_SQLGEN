@@ -55,7 +55,7 @@ if selected_file_format == "CUSTOM":
 result = None
 
 try:
-    if selected_file_format != "UNKNOWN":
+    if selected_file_format != "UNKNOWN" or "CUSTOM":
         # Step 2: Retrieve structure of the selected file
         query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
         result = conn.cursor().execute(query).fetchone()
@@ -66,24 +66,23 @@ except snowflake.connector.errors.ProgrammingError as e:
     st.error("Not the parser, try another.")
     st.error(str(e))
 
-# If 'result' is None, return from the script
+# If 'result' is None, print error message and skip the rest of the script
 if result is None:
     st.error("No result could be retrieved from the database.")
-    return
+else:
+    # Display result
+    st.write("Result:")
+    st.write(result)
 
-# Display result
-st.write("Result:")
-st.write(result)
+    # Get the structure as a string
+    structure_string = result[0]
 
-# Get the structure as a string
-structure_string = result[0]
-
-if selected_file_format == "JSON":
-    # Parse JSON structure into a dictionary
-    structure_dict = json.loads(structure_string)
-elif selected_file_format == "CUSTOM":
-    # Use regex pattern to extract fields
-    structure_dict = {match.group(): match.group() for match in re.finditer(regex_pattern, structure_string)}
+    if selected_file_format == "JSON":
+        # Parse JSON structure into a dictionary
+        structure_dict = json.loads(structure_string)
+    elif selected_file_format == "CUSTOM":
+        # Use regex pattern to extract fields
+        structure_dict = {match.group(): match.group() for match in re.finditer(regex_pattern, structure_string)}
 
 # Function to generate field mappings
 def generate_field_mappings(structure_dict, parent_key=''):
