@@ -91,14 +91,15 @@ else:
             field_mapping_data = []
             for i, match in enumerate(regex_matches, start=1):
                 field_name = st.text_input(f"Enter field name for Token {i}", "")
-                if field_name:
-                    regex_pattern = f"(?P<{field_name}>{re.escape(match.group())})"
-                    field_mapping_data.append({"Field Name": field_name, "Value": match.group(), "Regex Pattern": regex_pattern})
+                regex_pattern = f"(?P<{field_name}>{re.escape(match.group())})" if field_name else None
+                field_mapping_data.append({"Field Name": field_name, "Value": match.group(), "Regex Pattern": regex_pattern})
             field_mapping_df = pd.DataFrame(field_mapping_data)
             st.table(field_mapping_df)
 
-            selected_fields = field_mapping_df.dropna(subset=["Field Name"])["Field Name"].tolist()
-            selected_regex_patterns = field_mapping_df[field_mapping_df["Field Name"] != ""]["Regex Pattern"].tolist()
+            selected_fields = field_mapping_df["Field Name"].tolist()
+            selected_fields = [field for field in selected_fields if field]
+            selected_regex_patterns = field_mapping_df["Regex Pattern"].tolist()
+            selected_regex_patterns = [pattern for pattern in selected_regex_patterns if pattern]
 
             # Button to generate SQL statement
             if st.button("Generate SQL") and selected_fields:
