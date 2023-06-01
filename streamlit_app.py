@@ -51,8 +51,11 @@ selected_file_format = st.selectbox("Select a file format", file_formats)
 if selected_file_format == "CUSTOM":
     regex_pattern = st.text_input("Enter your regex pattern")
 
+# Initialize 'result' to None
+result = None
+
 try:
-    if selected_file_format != "CUSTOM":
+    if selected_file_format != "UNKNOWN":
         # Step 2: Retrieve structure of the selected file
         query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
         result = conn.cursor().execute(query).fetchone()
@@ -62,6 +65,11 @@ try:
 except snowflake.connector.errors.ProgrammingError as e:
     st.error("Not the parser, try another.")
     st.error(str(e))
+
+# If 'result' is None, return from the script
+if result is None:
+    st.error("No result could be retrieved from the database.")
+    return
 
 # Display result
 st.write("Result:")
