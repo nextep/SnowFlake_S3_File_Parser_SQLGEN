@@ -88,16 +88,18 @@ else:
         # Use regex to find matches in the string
         regex_matches = re.finditer(regex_pattern, structure_string)
         if regex_matches:
-            # Create an empty list to store the field mappings
+            # Create an empty list to store the field mappings# Create an empty list to store the field mappings
             field_mapping_data = []
 
             # Iterate over the regex matches and prompt for field names
             for i, match in enumerate(regex_matches, start=1):
-                field_name = ""
                 if match.groups():
-                    field_name = st.text_input(f"Enter field name for Token {i} (Value: {match.group()})", key=f"field_name_{i}", max_chars=20)
-                regex_pattern = f"(?P<{field_name}>{re.escape(match.group())})" if field_name else None
-                field_mapping_data.append({"Field Name": field_name, "Value": match.group(), "Regex Pattern": regex_pattern})
+                    for j, group in enumerate(match.groups(), start=1):
+                        field_name = st.text_input(f"Enter field name for Token {i} Group {j} (Value: {group})", key=f"field_name_{i}_{j}", max_chars=20)
+                        regex_pattern = f"(?P<{field_name}>{re.escape(group)})" if field_name else None
+                        field_mapping_data.append({"Field Name": field_name, "Value": group, "Regex Pattern": regex_pattern})
+                else:
+                    field_mapping_data.append({"Field Name": "", "Value": match.group(), "Regex Pattern": None})
 
 # Create a DataFrame from the field mappings
 field_mapping_df = pd.DataFrame(field_mapping_data)
