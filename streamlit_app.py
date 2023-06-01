@@ -49,7 +49,7 @@ file_formats = ["JSON", "CSV","UNKNOWN","AVRO","XML","PARQUET"]
 # File format selection
 selected_file_format = st.selectbox("Select a file format", file_formats)
 
- try:
+try:
     if selected_file_format != "UNKNOWN":
         # Step 2: Retrieve JSON structure of the selected file
         query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
