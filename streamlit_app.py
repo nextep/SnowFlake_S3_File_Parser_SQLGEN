@@ -55,7 +55,7 @@ if selected_file_format == "CUSTOM":
 result = None
 
 try:
-    if selected_file_format not in ["UNKNOWN", "CUSTOM"]:
+    if selected_file_format != "UNKNOWN":
         # Step 2: Retrieve structure of the selected file
         query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
         result = conn.cursor().execute(query).fetchone()
@@ -85,8 +85,9 @@ else:
             st.error("The result could not be parsed as a JSON string.")
             structure_dict = None
     elif selected_file_format == "CUSTOM":
-        # Parse CUSTOM structure into a dictionary
-        structure_dict = {m.group(0): "" for m in re.finditer(regex_pattern, structure_string)}
+        # Use regex to find matches in the string
+        regex_matches = re.findall(regex_pattern, structure_string)
+        structure_dict = {f"field_{i}": value for i, value in enumerate(regex_matches)}
     else:
         st.error("Unsupported file format.")
         structure_dict = None
@@ -101,16 +102,13 @@ else:
         selected_fields = []
 
         # For custom formats, create a 2-column layout with field names and values
-        if selected_file_format == "CUSTOM":
-            for field_value in structure_dict.keys():
-                with columns[0]:
-                    field_name = st.text_input(f"Enter field name for {field_value}", "")
-                with columns[1]:
-                    st.write(field_value)
-                if field_name:
-                    selected_fields.append(f"{field_name} as \"{field_value}\"")
-        else:
-            st.error("Only custom formats are currently supported for the regex pattern functionality.")
+        for field_value, original_field in structure_dict.items():
+            with columns[0]:
+                field_name = st.text_input(f"Enter field name for {original_field}", "")
+            with columns[1]:
+                st.write(original_field)
+            if field_name:
+                selected_fields.append(f"{field_name} as \"{field_value}\"")
 
         # Button to generate SQL statement
         if st.button("Generate SQL") and selected_fields:
