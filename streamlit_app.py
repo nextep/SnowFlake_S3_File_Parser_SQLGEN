@@ -48,11 +48,11 @@ file_formats = ["JSON", "CSV", "UNKNOWN", "AVRO", "XML", "PARQUET", "CUSTOM"]
 # File format selection
 selected_file_format = st.selectbox("Select a file format", file_formats)
 
-if selected_file_format == "CUSTOM":
-    regex_pattern = st.text_input("Enter your regex pattern")
-
 # Initialize 'result' to None
 result = None
+
+if selected_file_format == "CUSTOM":
+    regex_pattern = st.text_input("Enter your regex pattern")
 
 try:
     if selected_file_format not in ["UNKNOWN","CUSTOM"]:
@@ -89,10 +89,9 @@ else:
         regex_matches = re.findall(regex_pattern, structure_string)
         structure_dict = {f"field_{i}": value for i, value in enumerate(regex_matches)}
     else:
-        st.error("Unsupported file format.")
         structure_dict = None
 
-    # If 'structure_dict' is None, print error message and skip the rest of the script
+    # If 'structure_dict' is None, print error message
     if structure_dict is None:
         st.error("The structure of the result could not be determined.")
     else:
@@ -100,20 +99,27 @@ else:
         st.write("Field Mappings:")
         columns = st.beta_columns(2)
         selected_fields = []
+        selected_regex = []
 
         # For custom formats, create a 2-column layout with field names and values
-        for field_value, original_field in structure_dict.items():
+        for i, (original_field, field_value) in enumerate(structure_dict.items()):
             with columns[0]:
                 field_name = st.text_input(f"Enter field name for {original_field}", "")
             with columns[1]:
-                st.write(original_field)
+                st.write(field_value)
             if field_name:
                 selected_fields.append(f"{field_name} as \"{field_value}\"")
+                selected_regex.append(f"(?P<{field_name}>{re.escape(field_value)})")
 
         # Button to generate SQL statement
         if st.button("Generate SQL") and selected_fields:
             select_statement = "SELECT " + ", ".join(selected_fields) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
             st.write("Generated Select Statement:")
             st.code(select_statement)
+
+        if st.button("Generate Regex") and selected_regex:
+            combined_regex = "|".join(selected_regex)
+            st.write("Generated Regex:")
+            st.code(combined_regex)
         else:
             st.write("Please provide field names for the corresponding fields.")
