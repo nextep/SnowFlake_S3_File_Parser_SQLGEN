@@ -53,10 +53,9 @@ if selected_file_format == "CUSTOM":
 
 # Initialize 'result' to None
 result = None
-structure_dict = None
 
 try:
-    if selected_file_format != "UNKNOWN" or "CUSTOM":
+    if selected_file_format != "UNKNOWN":
         # Step 2: Retrieve structure of the selected file
         query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
         result = conn.cursor().execute(query).fetchone()
@@ -79,63 +78,74 @@ else:
     structure_string = result[0]
 
     if selected_file_format == "JSON":
-        # Parse JSON structure into a dictionary
-        structure_dict = json.loads(structure_string)
-    elif selected_file_format == "CUSTOM":
-        # Use regex pattern to extract fields
-        structure_dict = {match.group(): match.group() for match in re.finditer(regex_pattern, structure_string)}
-
-# Function to generate field mappings
-def generate_field_mappings(structure_dict, parent_key=''):
-    mappings = []
-    for key, value in structure_dict.items():
-        field_name = f"{parent_key}.{key}" if parent_key else key
-        if isinstance(value, dict):
-            mappings.extend(generate_field_mappings(value, field_name))
-        else:
-            mappings.append((field_name, get_field_type(value)))
-    return mappings
-
-# Function to determine field type
-def get_field_type(value):
-    if isinstance(value, int):
-        return "number"
-    elif isinstance(value, bool):
-        return "boolean"
-    elif isinstance(value, str):
-        # Check if the string value is a timestamp
         try:
-            pd.Timestamp(value)
-            return "timestamp"
-        except ValueError:
-            pass
-    return "varchar"
+            # Parse JSON structure into a dictionary
+            structure_dict = json.loads(structure_string)
+        except json.JSONDecodeError:
+            st.error("The result could not be parsed as a JSON string.")
+            structure_dict = None
+    elif selected_file_format == "CUSTOM":
+        # Parse CUSTOM structure into a dictionary
+        structure_dict = {m.group(0): "" for m in re.finditer(regex_pattern, structure_string)}
+    else:
+        st.error("Unsupported file format.")
+        structure_dict = None
 
-# Generate field mappings
-field_mappings = generate_field_mappings(structure_dict)
-key_field = '$1'
+    # If 'structure_dict' is None, print error message and skip the rest of the script
+    if structure_dict is None:
+        st.error("The structure of the result could not be determined.")
+    else:
+        # Function to generate field mappings
+        def generate_field_mappings(structure_dict, parent_key=''):
+            mappings = []
+            for key, value in structure_dict.items():
+                field_name = f"{parent_key}.{key}" if parent_key else key
+                if isinstance(value, dict):
+                    mappings.extend(generate_field_mappings(value, field_name))
+                else:
+                    mappings.append((field_name, get_field_type(value)))
+            return mappings
 
-# Streamlit UI for field mappings and text inputs
-st.write("Field Mappings:")
-columns = st.beta_columns(3)
-selected_fields = []
-for field_name, field_type in field_mappings:
-    with columns[0]:
-        st.write(f"{key_field}:{field_name}::{field_type}")
-    with columns[1]:
-        input_key = f"{field_name}"
-        input_value = st.text_input(f"Enter field name for {field_name}", "")
-    with columns[2]:
-        if input_value:
-            if "@" in field_name:
-                selected_fields.append(f"{key_field}:\"{field_name}\"::{field_type} as {input_value}")
-            else:
-                selected_fields.append(f"{key_field}:{field_name}::{field_type} as {input_value}")
+        # Function to determine field type
+        def get_field_type(value):
+            if isinstance(value, int):
+                return "number"
+            elif isinstance(value, bool):
+                return "boolean"
+            elif isinstance(value, str):
+                # Check if the string value is a timestamp
+                try:
+                    pd.Timestamp(value)
+                    return "timestamp"
+                except ValueError:
+                    pass
+            return "varchar"
 
-# Button to generate SQL statement
-if st.button("Generate SQL") and selected_fields:
-    select_statement = "SELECT " + ", ".join(selected_fields) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
-    st.write("Generated Select Statement:")
-    st.code(select_statement)
-else:
-    st.write("Please provide values for the corresponding fields.")
+        # Generate field mappings
+        field_mappings = generate_field_mappings(structure_dict)
+        key_field = '$1'
+
+        # Streamlit UI for field mappings and text inputs
+        st.write("Field Mappings:")
+        columns = st.beta_columns(3)
+        selected_fields = []
+        for field_name, field_type in field_mappings:
+            with columns[0]:
+                st.write(f"{key_field}:{field_name}::{field_type}")
+            with columns[1]:
+                input_key = f"{field_name}"
+                input_value = st.text_input(f"Enter field name for {field_name}", "")
+            with columns[2]:
+                if input_value:
+                    if "@" in field_name:
+                        selected_fields.append(f"{key_field}:\"{field_name}\"::{field_type} as {input_value}")
+                    else:
+                        selected_fields.append(f"{key_field}:{field_name}::{field_type} as {input_value}")
+
+        # Button to generate SQL statement
+        if st.button("Generate SQL") and selected_fields:
+            select_statement = "SELECT " + ", ".join(selected_fields) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
+            st.write("Generated Select Statement:")
+            st.code(select_statement)
+        else:
+            st.write("Please provide values for the corresponding fields.")
