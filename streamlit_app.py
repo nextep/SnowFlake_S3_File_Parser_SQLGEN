@@ -60,12 +60,12 @@ except snowflake.connector.errors.ProgrammingError as e:
         st.error("Not the parser, try another.")
         st.error(str(e))
         
-    # Display result
-    st.write("Result:")
-    st.write(result)
+# Display result
+st.write("Result:")
+st.write(result)
 
-    # Get the JSON structure as a string
-    json_string = result[0]
+# Get the JSON structure as a string
+json_string = result[0]
 
                 
 # Parse JSON structure into a dictionary
