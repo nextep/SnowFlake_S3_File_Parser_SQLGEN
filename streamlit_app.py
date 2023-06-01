@@ -115,11 +115,11 @@ if st.button("Generate SQL") and selected_fields:
     st.code(select_statement)
 
 
-            if st.button("Generate Regex") and selected_regex_patterns:
-                combined_regex = "|".join(selected_regex_patterns)
-                st.write("Generated Regex:")
-                st.code(combined_regex)
-        else:
-            st.error("No matches found in the result using the provided regex pattern.")
-    else:
-        st.error("Invalid file format selected.")
+if st.button("Generate Regex") and selected_regex_patterns:
+    combined_regex = "|".join(selected_regex_patterns)
+    st.write("Generated Regex:")
+    st.code(combined_regex)
+else:
+st.error("No matches found in the result using the provided regex pattern.")
+else:
+st.error("Invalid file format selected.")
