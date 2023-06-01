@@ -53,9 +53,10 @@ try:
     if selected_file_format != "UNKNOWN":
         # Step 2: Retrieve JSON structure of the selected file
         query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
+        result = conn.cursor().execute(query).fetchone()
     else:
         query = f"SELECT $1 FROM @{stage_name}/{selected_entry}"
-        
+        result = conn.cursor().execute(query).fetchone()        
 except snowflake.connector.errors.ProgrammingError as e:
         st.error("Not the parser, try another.")
         st.error(str(e))
