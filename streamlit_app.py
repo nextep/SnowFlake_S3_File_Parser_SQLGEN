@@ -88,7 +88,6 @@ else:
         # Use regex to find matches in the string
         regex_matches = re.finditer(regex_pattern, structure_string)
         if regex_matches:
-            # Create an input field for each row to enter field names
             # Create an empty list to store the field mappings
             field_mapping_data = []
 
@@ -96,7 +95,7 @@ else:
             for i, match in enumerate(regex_matches, start=1):
                 field_name = st.text_input(f"Enter field name for Token {i} (Value: {match.group()})", key=f"field_name_{i}", max_chars=20)
                 regex_pattern = f"(?P<{field_name}>{re.escape(match.group())})" if field_name else None
-                field_mapping_data.extend([{"Field Name": field_name, "Value": value, "Regex Pattern": regex_pattern} for value in match.groups()])
+                field_mapping_data.append({"Field Name": field_name, "Value": match.group(), "Regex Pattern": regex_pattern})
 
 # Create a DataFrame from the field mappings
 field_mapping_df = pd.DataFrame(field_mapping_data)
@@ -115,7 +114,6 @@ if st.button("Generate SQL") and selected_fields:
     select_statement = "SELECT " + ", ".join(selected_fields) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
     st.write("Generated Select Statement:")
     st.code(select_statement)
-
 
     if st.button("Generate Regex") and selected_regex_patterns:
         combined_regex = "|".join(selected_regex_patterns)
