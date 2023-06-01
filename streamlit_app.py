@@ -55,7 +55,7 @@ if selected_file_format == "CUSTOM":
     regex_pattern = st.text_input("Enter your regex pattern")
 
 try:
-    if selected_file_format not in ["UNKNOWN","CUSTOM"]:
+    if selected_file_format not in ["CUSTOM","UNKNOWN"]:
         # Step 2: Retrieve structure of the selected file
         query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
         result = conn.cursor().execute(query).fetchone()
@@ -86,8 +86,11 @@ else:
             structure_dict = None
     elif selected_file_format == "CUSTOM":
         # Use regex to find matches in the string
-        regex_matches = re.findall(regex_pattern, structure_string)
-        structure_dict = {f"field_{i}": value for i, value in enumerate(regex_matches)}
+        regex_matches = re.search(regex_pattern, structure_string)
+        if regex_matches:
+            structure_dict = {f"field_{i}": value for i, value in enumerate(regex_matches.groups())}
+        else:
+            structure_dict = None
     else:
         structure_dict = None
 
@@ -102,7 +105,7 @@ else:
         selected_regex = []
 
         # For custom formats, create a 2-column layout with field names and values
-        for i, (original_field, field_value) in enumerate(structure_dict.items()):
+        for original_field, field_value in structure_dict.items():
             with columns[0]:
                 field_name = st.text_input(f"Enter field name for {original_field}", "")
             with columns[1]:
