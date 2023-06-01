@@ -91,9 +91,11 @@ else:
             field_mapping_data = []
             for i, match in enumerate(regex_matches, start=1):
                 field_name = st.text_input(f"Enter field name for Token {i}", "")
-                regex_pattern = f"(?P<{field_name}>{re.escape(match.group())})" if field_name else None
-                field_mapping_data.append({"Field Name": field_name, "Value": match.group(), "Regex Pattern": regex_pattern})
+                if field_name:
+                    regex_pattern = f"(?P<{field_name}>{re.escape(match.group())})"
+                    field_mapping_data.append({"Field Name": field_name, "Value": match.group(), "Regex Pattern": regex_pattern})
             field_mapping_df = pd.DataFrame(field_mapping_data)
+            st.write("Field Mappings:")
             st.table(field_mapping_df)
 
             selected_fields = field_mapping_df["Field Name"].tolist()
