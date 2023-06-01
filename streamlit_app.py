@@ -88,34 +88,29 @@ else:
         # Use regex to find matches in the string
         regex_matches = re.finditer(regex_pattern, structure_string)
         if regex_matches:
-            structure_dict = {f"field_{i+1}": match.group() for i, match in enumerate(regex_matches)}
+            field_mapping_data = []
+            for i, match in enumerate(regex_matches, start=1):
+                field_name = st.text_input(f"Enter field name for Token {i}", "")
+                if field_name:
+                    regex_pattern = f"(?P<{field_name}>{re.escape(match.group())})"
+                    field_mapping_data.append({"Field Name": field_name, "Value": match.group(), "Regex Pattern": regex_pattern})
+            field_mapping_df = pd.DataFrame(field_mapping_data)
+            st.table(field_mapping_df)
+
+            selected_fields = field_mapping_df[field_mapping_df["Field Name"] != ""]["Field Name"].tolist()
+            selected_regex_patterns = field_mapping_df[field_mapping_df["Field Name"] != ""]["Regex Pattern"].tolist()
+
+            # Button to generate SQL statement
+            if st.button("Generate SQL") and selected_fields:
+                select_statement = "SELECT " + ", ".join([f"{field} as \"{structure_dict[field]}\"" for field in selected_fields]) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
+                st.write("Generated Select Statement:")
+                st.code(select_statement)
+
+            if st.button("Generate Regex") and selected_regex_patterns:
+                combined_regex = "|".join(selected_regex_patterns)
+                st.write("Generated Regex:")
+                st.code(combined_regex)
         else:
-            structure_dict = None
+            st.error("No matches found in the result using the provided regex pattern.")
     else:
-        structure_dict = None
-
-    # If 'structure_dict' is None, print error message
-    if structure_dict is None:
-        st.error("The structure of the result could not be determined.")
-    else:
-        field_mapping_data = []
-        for original_field, field_value in structure_dict.items():
-            field_mapping_data.append({"Field Name": "", "Value": field_value, "Regex Pattern": original_field})
-
-        # Create a DataFrame and display it as a table in Streamlit
-        field_mapping_df = pd.DataFrame(field_mapping_data)
-        st.table(field_mapping_df)
-
-        selected_fields = field_mapping_df[field_mapping_df["Field Name"] != ""]["Field Name"].tolist()
-        selected_regex_patterns = field_mapping_df[field_mapping_df["Field Name"] != ""]["Regex Pattern"].tolist()
-
-        # Button to generate SQL statement
-        if st.button("Generate SQL") and selected_fields:
-            select_statement = "SELECT " + ", ".join([f"{field} as \"{structure_dict[field]}\"" for field in selected_fields]) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
-            st.write("Generated Select Statement:")
-            st.code(select_statement)
-
-        if st.button("Generate Regex") and selected_regex_patterns:
-            combined_regex = "|".join(selected_regex_patterns)
-            st.write("Generated Regex:")
-            st.code(combined_regex)
+        st.error("Invalid file format selected.")
