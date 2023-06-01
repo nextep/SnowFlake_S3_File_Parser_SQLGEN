@@ -53,6 +53,7 @@ if selected_file_format == "CUSTOM":
 
 # Initialize 'result' to None
 result = None
+structure_dict = None
 
 try:
     if selected_file_format != "UNKNOWN" or "CUSTOM":
