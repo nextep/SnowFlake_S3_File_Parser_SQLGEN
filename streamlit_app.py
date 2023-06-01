@@ -92,7 +92,7 @@ else:
             for i, match in enumerate(regex_matches, start=1):
                 field_name = st.text_input(f"Enter field name for Token {i}", key=f"field_{i}", max_chars=20)
                 regex_pattern = f"(?P<{field_name}>{re.escape(match.group())})" if field_name else None
-                field_mapping_data.extend([{"Field Name": st.text_input(f"Field Name {j}", key=f"field_{i}_value_{j}"), "Value": value, "Regex Pattern": regex_pattern} for j, value in enumerate(match.groups(), start=1)])
+                field_mapping_data.extend([{"Field Name": field_name, "Field Value": st.text_input(f"Field Value for Token {i}_{j}", key=f"field_{i}_value_{j}"), "Value": value, "Regex Pattern": regex_pattern} for j, value in enumerate(match.groups(), start=1)])
             field_mapping_df = pd.DataFrame(field_mapping_data)
             st.write("Field Mappings:")
             if not field_mapping_df.empty:
@@ -107,6 +107,7 @@ else:
                 select_statement = "SELECT " + ", ".join(selected_fields) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
                 st.write("Generated Select Statement:")
                 st.code(select_statement)
+
 
             if st.button("Generate Regex") and selected_regex_patterns:
                 combined_regex = "|".join(selected_regex_patterns)
