@@ -97,8 +97,8 @@ else:
             field_mapping_df = pd.DataFrame(field_mapping_data)
             st.table(field_mapping_df)
 
-            selected_fields = field_mapping_df[field_mapping_df["Field Name"].notnull()]["Field Name"].tolist()
-            selected_regex_patterns = field_mapping_df[field_mapping_df["Field Name"].notnull()]["Regex Pattern"].tolist()
+            selected_fields = field_mapping_df.dropna(subset=["Field Name"])["Field Name"].tolist()
+            selected_regex_patterns = field_mapping_df[field_mapping_df["Field Name"] != ""]["Regex Pattern"].tolist()
 
             # Button to generate SQL statement
             if st.button("Generate SQL") and selected_fields:
