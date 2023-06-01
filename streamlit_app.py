@@ -98,25 +98,22 @@ else:
     if structure_dict is None:
         st.error("The structure of the result could not be determined.")
     else:
-        # Streamlit UI for field mappings and text inputs
-        st.write("Field Mappings:")
-        columns = st.beta_columns(2)
-        selected_fields = []
-        selected_regex = []
-
-        # For custom formats, create a 2-column layout with field names and values
+        field_value_data = []
         for original_field, field_value in structure_dict.items():
-            with columns[0]:
-                field_name = st.text_input(f"Enter field name for {original_field}", "")
-            with columns[1]:
-                st.write(field_value)
+            field_name = st.text_input(f"Enter field name for {original_field}", "")
             if field_name:
-                selected_fields.append(f"{field_name} as \"{field_value}\"")
-                selected_regex.append(f"(?P<{field_name}>{re.escape(field_value)})")
+                field_value_data.append({"Field Name": field_name, "Value": field_value})
+
+        # Create a DataFrame and display it as a table in Streamlit
+        field_value_df = pd.DataFrame(field_value_data)
+        st.table(field_value_df)
+
+        selected_fields = [row["Field Name"] for _, row in field_value_df.iterrows()]
+        selected_regex = [f"(?P<{row['Field Name']}>{re.escape(row['Value'])})" for _, row in field_value_df.iterrows()]
 
         # Button to generate SQL statement
         if st.button("Generate SQL") and selected_fields:
-            select_statement = "SELECT " + ", ".join(selected_fields) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
+            select_statement = "SELECT " + ", ".join([f"{field} as \"{structure_dict[field]}\"" for field in selected_fields]) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
             st.write("Generated Select Statement:")
             st.code(select_statement)
 
@@ -124,5 +121,3 @@ else:
             combined_regex = "|".join(selected_regex)
             st.write("Generated Regex:")
             st.code(combined_regex)
-        else:
-            st.write("Please provide field names for the corresponding fields.")
