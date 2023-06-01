@@ -55,7 +55,7 @@ if selected_file_format == "CUSTOM":
 result = None
 
 try:
-    if selected_file_format != "UNKNOWN":
+    if selected_file_format != "UNKNOWN" or "CUSTOM":
         # Step 2: Retrieve structure of the selected file
         query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
         result = conn.cursor().execute(query).fetchone()
