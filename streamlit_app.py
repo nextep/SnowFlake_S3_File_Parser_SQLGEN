@@ -44,26 +44,29 @@ selected_entry = selected_entry.split("/")[-1].strip()
 
 
 # File formats
-file_formats = ["JSON", "CSV"]  # Add your desired file formats here
+file_formats = ["JSON", "CSV","UNKNOWN]  # Add your desired file formats here
 
 # File format selection
 selected_file_format = st.selectbox("Select a file format", file_formats)
 
-try:
-    # Step 2: Retrieve JSON structure of the selected file
-    query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
-    result = conn.cursor().execute(query).fetchone()
-except snowflake.connector.errors.ProgrammingError as e:
-    st.error("Not the parser, try another.")
-    st.error(str(e))
+ try:
+    if selected_file_format != "UNKNOWN":
+        # Step 2: Retrieve JSON structure of the selected file
+        query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
+    else:
+        query = f"SELECT $1 FROM @{stage_name}/{selected_entry}"
 
-# Display result
-st.write("Result:")
-st.write(result)
+        # Display result
+        st.write("Result:")
+        st.write(result)
 
-# Get the JSON structure as a string
-json_string = result[0]
+        # Get the JSON structure as a string
+        json_string = result[0]
 
+    except snowflake.connector.errors.ProgrammingError as e:
+        st.error("Not the parser, try another.")
+        st.error(str(e))
+                
 # Parse JSON structure into a dictionary
 json_structure = json.loads(json_string)
 
