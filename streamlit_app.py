@@ -108,6 +108,11 @@ if not field_mapping_df.empty:
 # Add the entered field values to the DataFrame
 field_mapping_df["Field Value"] = field_values
 
+# Display the updated table with field values
+st.write("Updated Field Mappings:")
+if not field_mapping_df.empty:
+    st.table(field_mapping_df)
+
 # Get selected field names for query
 selected_fields = field_mapping_df["Field Name"].tolist()
 selected_fields = [field for field in selected_fields if field]
