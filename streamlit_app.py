@@ -44,7 +44,7 @@ selected_entry = selected_entry.split("/")[-1].strip()
 
 
 # File formats
-file_formats = ["JSON", "CSV","UNKNOWN]  # Add your desired file formats here
+file_formats = ["JSON", "CSV","UNKNOWN","AVRO","XML","PARQUET"]
 
 # File format selection
 selected_file_format = st.selectbox("Select a file format", file_formats)
