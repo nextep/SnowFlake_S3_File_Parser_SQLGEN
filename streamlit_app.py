@@ -52,7 +52,7 @@ if selected_file_format == "CUSTOM":
     regex_pattern = st.text_input("Enter your regex pattern")
 
 try:
-    if selected_file_format != "UNKNOWN" or selected_file_format != "CUSTOM":
+    if selected_file_format != "UNKNOWN" or "CUSTOM":
         # Step 2: Retrieve structure of the selected file
         query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
         result = conn.cursor().execute(query).fetchone()
