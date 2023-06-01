@@ -89,24 +89,30 @@ else:
         regex_matches = re.finditer(regex_pattern, structure_string)
         if regex_matches:
             field_mapping_data = []
-            for i, match in enumerate(regex_matches, start=1):
-                field_name = st.text_input(f"Enter field name for Token {i}", key=f"field_{i}", max_chars=20)
-                regex_pattern = f"(?P<{field_name}>{re.escape(match.group())})" if field_name else None
-                field_mapping_data.extend([{"Field Name": field_name, "Field Value": st.text_input(f"Field Value for Token {i}_{j}", key=f"field_{i}_value_{j}"), "Value": value, "Regex Pattern": regex_pattern} for j, value in enumerate(match.groups(), start=1)])
-            field_mapping_df = pd.DataFrame(field_mapping_data)
-            st.write("Field Mappings:")
-            if not field_mapping_df.empty:
-                st.table(field_mapping_df)
+for i, match in enumerate(regex_matches, start=1):
+    field_name = st.text_input(f"Enter field name for Token {i}", key=f"field_{i}", max_chars=20)
+    regex_pattern = f"(?P<{field_name}>{re.escape(match.group())})" if field_name else None
+    field_mapping_data.extend([{"Field Name": field_name, "Value": value, "Regex Pattern": regex_pattern} for value in match.groups()])
+field_mapping_df = pd.DataFrame(field_mapping_data)
+st.write("Field Mappings:")
+if not field_mapping_df.empty:
+    st.table(field_mapping_df)
 
-            # Get selected field names for query
-            selected_fields = field_mapping_df["Field Name"].tolist()
-            selected_fields = [field for field in selected_fields if field]
+# Allow users to enter corresponding field values
+if not field_mapping_df.empty:
+    for i, row in field_mapping_df.iterrows():
+        field_value = st.text_input(f"Enter field value for Field Name '{row['Field Name']}'", key=f"field_value_{i}")
+        field_mapping_df.at[i, 'Field Value'] = field_value
 
-            # Generate SQL statement
-            if st.button("Generate SQL") and selected_fields:
-                select_statement = "SELECT " + ", ".join(selected_fields) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
-                st.write("Generated Select Statement:")
-                st.code(select_statement)
+# Get selected field names for query
+selected_fields = field_mapping_df["Field Name"].tolist()
+selected_fields = [field for field in selected_fields if field]
+
+# Generate SQL statement
+if st.button("Generate SQL") and selected_fields:
+    select_statement = "SELECT " + ", ".join(selected_fields) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
+    st.write("Generated Select Statement:")
+    st.code(select_statement)
 
 
             if st.button("Generate Regex") and selected_regex_patterns:
