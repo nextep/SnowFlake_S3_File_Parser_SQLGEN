@@ -1,9 +1,9 @@
 import snowflake.connector
 import streamlit as st
-
 import pandas as pd
 import requests
 import json
+import re
 from urllib.error import URLError
 
 # Streamlit secrets
@@ -42,47 +42,50 @@ selected_entry = st.selectbox("Select an entry", [entry[0] for entry in stage_en
 # Extract the filename from the selected entry
 selected_entry = selected_entry.split("/")[-1].strip()
 
-
 # File formats
-file_formats = ["JSON", "CSV","UNKNOWN","AVRO","XML","PARQUET"]
+file_formats = ["JSON", "CSV", "UNKNOWN", "AVRO", "XML", "PARQUET", "CUSTOM"]
 
 # File format selection
 selected_file_format = st.selectbox("Select a file format", file_formats)
 
+if selected_file_format == "CUSTOM":
+    regex_pattern = st.text_input("Enter your regex pattern")
+
 try:
-    if selected_file_format != "UNKNOWN":
-        # Step 2: Retrieve JSON structure of the selected file
+    if selected_file_format != "UNKNOWN" or selected_file_format != "CUSTOM":
+        # Step 2: Retrieve structure of the selected file
         query = f"SELECT $1 FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format}) LIMIT 1"
         result = conn.cursor().execute(query).fetchone()
     else:
         query = f"SELECT $1 FROM @{stage_name}/{selected_entry}"
-        result = conn.cursor().execute(query).fetchone()        
+        result = conn.cursor().execute(query).fetchone()
 except snowflake.connector.errors.ProgrammingError as e:
-        st.error("Not the parser, try another.")
-        st.error(str(e))
-        
+    st.error("Not the parser, try another.")
+    st.error(str(e))
+
 # Display result
 st.write("Result:")
 st.write(result)
 
-# Get the JSON structure as a string
-json_string = result[0]
+# Get the structure as a string
+structure_string = result[0]
 
-                
-# Parse JSON structure into a dictionary
-json_structure = json.loads(json_string)
+if selected_file_format == "JSON":
+    # Parse JSON structure into a dictionary
+    structure_dict = json.loads(structure_string)
+elif selected_file_format == "CUSTOM":
+    # Use regex pattern to extract fields
+    structure_dict = {match.group(): match.group() for match in re.finditer(regex_pattern, structure_string)}
 
 # Function to generate field mappings
-def generate_field_mappings(json_structure, parent_key=''):
+def generate_field_mappings(structure_dict, parent_key=''):
     mappings = []
-    for key, value in json_structure.items():
+    for key, value in structure_dict.items():
         field_name = f"{parent_key}.{key}" if parent_key else key
-
         if isinstance(value, dict):
             mappings.extend(generate_field_mappings(value, field_name))
         else:
             mappings.append((field_name, get_field_type(value)))
-
     return mappings
 
 # Function to determine field type
@@ -101,7 +104,7 @@ def get_field_type(value):
     return "varchar"
 
 # Generate field mappings
-field_mappings = generate_field_mappings(json_structure)
+field_mappings = generate_field_mappings(structure_dict)
 key_field = '$1'
 
 # Streamlit UI for field mappings and text inputs
@@ -128,4 +131,3 @@ if st.button("Generate SQL") and selected_fields:
     st.code(select_statement)
 else:
     st.write("Please provide values for the corresponding fields.")
-    
