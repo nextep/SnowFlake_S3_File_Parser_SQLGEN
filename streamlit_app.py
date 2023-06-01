@@ -90,26 +90,24 @@ else:
         if regex_matches:
             field_mapping_data = []
             for i, match in enumerate(regex_matches, start=1):
-                field_name = st.text_input(f"Enter field name for Token {i}", key=f"field_{i}")
+                field_name = st.text_input(f"Enter field name for Token {i}", key=f"field_{i}", max_chars=20)
                 regex_pattern = f"(?P<{field_name}>{re.escape(match.group())})" if field_name else None
-                field_mapping_data.extend([{"Field Name": f"{field_name}_{j}", "Value": value, "Regex Pattern": regex_pattern} for j, value in enumerate(match.groups(), start=1)])
+                field_mapping_data.extend([{"Field Name": field_name, "Value": value, "Regex Pattern": regex_pattern} for value in match.groups()])
             field_mapping_df = pd.DataFrame(field_mapping_data)
             st.write("Field Mappings:")
             if not field_mapping_df.empty:
                 st.table(field_mapping_df)
 
-
-
+            # Get selected field names for query
             selected_fields = field_mapping_df["Field Name"].tolist()
             selected_fields = [field for field in selected_fields if field]
-            selected_regex_patterns = field_mapping_df["Regex Pattern"].tolist()
-            selected_regex_patterns = [pattern for pattern in selected_regex_patterns if pattern]
 
-            # Button to generate SQL statement
+            # Generate SQL statement
             if st.button("Generate SQL") and selected_fields:
-                select_statement = "SELECT " + ", ".join([f"{field} as \"{structure_dict[field]}\"" for field in selected_fields]) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
+                select_statement = "SELECT " + ", ".join(selected_fields) + f" FROM @{stage_name}/{selected_entry} (file_format => {selected_file_format})"
                 st.write("Generated Select Statement:")
                 st.code(select_statement)
+
 
             if st.button("Generate Regex") and selected_regex_patterns:
                 combined_regex = "|".join(selected_regex_patterns)
