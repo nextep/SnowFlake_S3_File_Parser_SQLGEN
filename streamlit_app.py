@@ -86,9 +86,9 @@ else:
             structure_dict = None
     elif selected_file_format == "CUSTOM":
         # Use regex to find matches in the string
-        regex_matches = re.search(regex_pattern, structure_string)
+        regex_matches = re.finditer(regex_pattern, structure_string)
         if regex_matches:
-            structure_dict = {f"field_{i}": value for i, value in enumerate(regex_matches.groups())}
+            structure_dict = {f"field_{i+1}": match.group() for i, match in enumerate(regex_matches)}
         else:
             structure_dict = None
     else:
@@ -100,17 +100,14 @@ else:
     else:
         field_mapping_data = []
         for original_field, field_value in structure_dict.items():
-            field_name = st.text_input(f"Enter field name for {original_field}", "")
-            if field_name:
-                regex_pattern = f"(?P<{field_name}>{re.escape(field_value)})"
-                field_mapping_data.append({"Field Name": field_name, "Value": field_value, "Regex Pattern": regex_pattern})
+            field_mapping_data.append({"Field Name": "", "Value": field_value, "Regex Pattern": original_field})
 
         # Create a DataFrame and display it as a table in Streamlit
         field_mapping_df = pd.DataFrame(field_mapping_data)
         st.table(field_mapping_df)
 
-        selected_fields = [row["Field Name"] for _, row in field_mapping_df.iterrows()]
-        selected_regex_patterns = [row["Regex Pattern"] for _, row in field_mapping_df.iterrows()]
+        selected_fields = field_mapping_df[field_mapping_df["Field Name"] != ""]["Field Name"].tolist()
+        selected_regex_patterns = field_mapping_df[field_mapping_df["Field Name"] != ""]["Regex Pattern"].tolist()
 
         # Button to generate SQL statement
         if st.button("Generate SQL") and selected_fields:
