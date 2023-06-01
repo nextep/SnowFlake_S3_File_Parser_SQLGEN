@@ -114,7 +114,7 @@ if st.button("Generate SQL") and selected_fields:
     st.write("Generated Select Statement:")
     st.code(select_statement)
 
-            if st.button("Generate Regex") and selected_regex_patterns:
+           if st.button("Generate Regex") and selected_regex_patterns:
                 combined_regex = "|".join(selected_regex_patterns)
                 st.write("Generated Regex:")
                 st.code(combined_regex)
